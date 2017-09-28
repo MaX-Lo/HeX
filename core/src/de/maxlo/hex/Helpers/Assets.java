@@ -16,7 +16,7 @@ public class Assets {
 
     public GlyphLayout layout;
 
-    public Texture hexagon;
+    public Texture blackHex, blueHex, yellowHex, greenHex, purpleHex, redHex;
     public Texture img;
 
     public Assets() {
@@ -28,7 +28,13 @@ public class Assets {
 
     private void loadTextures() {
         manager.load("textures/badlogic.jpg", Texture.class);
+
+        manager.load("textures/hexagon_black.png", Texture.class);
         manager.load("textures/hexagon_blue.png", Texture.class);
+        manager.load("textures/hexagon_yellow.png", Texture.class);
+        manager.load("textures/hexagon_green.png", Texture.class);
+        manager.load("textures/hexagon_purple.png", Texture.class);
+        manager.load("textures/hexagon_red.png", Texture.class);
     }
 
     private void loadFonts() {
@@ -44,8 +50,12 @@ public class Assets {
     }
 
     public void done() {
-        hexagon = manager.get("textures/hexagon_blue.png");
-        img = manager.get("textures/badlogic.jpg");
+        blackHex = manager.get("textures/hexagon_black.png");
+        blueHex = manager.get("textures/hexagon_blue.png");
+        yellowHex = manager.get("textures/hexagon_yellow.png");
+        greenHex = manager.get("textures/hexagon_green.png");
+        purpleHex = manager.get("textures/hexagon_purple.png");
+        redHex = manager.get("textures/hexagon_red.png");
     }
 
     public void dispose() {

@@ -5,6 +5,7 @@ import com.badlogic.gdx.*;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
@@ -15,6 +16,9 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
+import java.util.Iterator;
+
+import de.maxlo.hex.GameObjects.GameMap;
 import de.maxlo.hex.GameObjects.Hexagon;
 import de.maxlo.hex.GameObjects.NormalHexagon;
 import de.maxlo.hex.GameObjects.Player;
@@ -38,12 +42,12 @@ public class GameScreen implements Screen {
     private InputMultiplexer multiplexer;
     private OrthographicCamera camera;
 
-    Hexagon hexTest;
+    //Hexagon hexTest;
+    private GameMap map;
 
     GameScreen(Hex game) {
         this.game = game;
         assets = game.getAssets();
-
 
         uiStage = new Stage(new ScreenViewport());
         multiplexer = new InputMultiplexer();
@@ -57,7 +61,9 @@ public class GameScreen implements Screen {
         camera.setToOrtho(false, GAME_WIDTH, GAME_HEIGHT);
         camera.translate(-50, -25);
 
-        hexTest = new NormalHexagon(new Player(), assets.hexagon);
+        //hexTest = new NormalHexagon(new Player(), assets.hexagon);
+
+        map = new GameMap(game);
     }
 
     private void initUI() {
@@ -108,6 +114,9 @@ public class GameScreen implements Screen {
 
     @Override
     public void render(float delta) {
+
+        map.update(delta);
+
         Gdx.gl.glClearColor(0.3f, 0.3f, 0.3f, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
@@ -123,10 +132,34 @@ public class GameScreen implements Screen {
         uiStage.act();
 
         game.batch.begin();
-        game.batch.draw(hexTest.getTexture(), 0, 0);
+        drawHexagons(game.batch);
+
         game.batch.end();
 
         uiStage.draw();
+    }
+
+    private void drawHexagons(SpriteBatch batch) {
+        for (Vector3 coordinate : map.getHexagons().keySet()) {
+            Hexagon hexagon = map.getHexagons().get(coordinate);
+            drawHexagon(batch, coordinate, hexagon);
+        }
+    }
+
+    private void drawHexagon(SpriteBatch batch, Vector3 coordinates, Hexagon hexagon) {
+        float x = coordinates.x;
+        float y = coordinates.y;
+
+        float hexWidth = assets.greenHex.getWidth();
+        float hexHeight = assets.greenHex.getHeight();
+        float radius = hexWidth / 2.0f;
+
+        // calculate x and y from the hexagon image
+        float screenX = (float) (x * (radius + Math.sqrt((radius * radius) - ((hexHeight * hexHeight) / 4))));
+        float screenY = (float) (-0.5 * hexHeight * x) + (hexHeight * y);
+
+        batch.draw(hexagon.getTexture(), screenX, screenY);
+
     }
 
     @Override

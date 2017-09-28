@@ -6,12 +6,16 @@ package de.maxlo.hex.GameObjects;
 
 public class Player {
 
-    private enum Color {none, red, blue, green, yellow}
+    public enum Color {none, red, blue, green, yellow}
 
     private Color color;
 
     public Player() {
         color = Color.none;
+    }
+
+    public Player(Color color) {
+        this.color = color;
     }
 
     private Color getColor() {
