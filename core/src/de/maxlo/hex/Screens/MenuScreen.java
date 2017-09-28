@@ -32,10 +32,53 @@ public class MenuScreen implements Screen {
         stage = new Stage(new ScreenViewport());
         Gdx.input.setInputProcessor(stage);
 
-        Skin mySkin = new Skin(Gdx.files.internal("skins/shade/skin/uiskin.json"));
+        Button startBtn = createStartButton();
+        Button optionBtn = createOptionButton();
+        Button highscoreBtn = creatHighscoreButton();
 
-        Button startBtn = new TextButton("Start", mySkin);
-        startBtn.setPosition(Gdx.graphics.getWidth()/2-startBtn.getWidth()/2, Gdx.graphics.getHeight()/2-startBtn.getHeight()/2);
+        stage.addActor(startBtn);
+        stage.addActor(optionBtn);
+        stage.addActor(highscoreBtn);
+    }
+
+    private Button creatHighscoreButton() {
+        Skin highscoreBtnSkin = new Skin(Gdx.files.internal("skins/shade/skin/uiskin.json"));
+        Button highscoreBtn = new TextButton("Highscores", highscoreBtnSkin);
+        highscoreBtn.setPosition(Gdx.graphics.getWidth()/2 - highscoreBtn.getWidth()/2, Gdx.graphics.getHeight()/2 - highscoreBtn.getHeight());
+        highscoreBtn.addListener(new InputListener() {
+            @Override
+            public void touchUp (InputEvent event, float x, float y, int pointer, int button){
+                startGame();
+            }
+            @Override
+            public boolean touchDown (InputEvent event, float x, float y, int pointer, int button){
+                return true;
+            }
+        });
+        return highscoreBtn;
+    }
+
+    private Button createOptionButton() {
+        Skin optionBtnSkin = new Skin(Gdx.files.internal("skins/shade/skin/uiskin.json"));
+        Button optionBtn = new TextButton("Option", optionBtnSkin);
+        optionBtn.setPosition(Gdx.graphics.getWidth()/2 - optionBtn.getWidth()/2, Gdx.graphics.getHeight()/2 - optionBtn.getHeight()/2);
+        optionBtn.addListener(new InputListener(){
+            @Override
+            public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
+                startGame();
+            }
+            @Override
+            public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
+                return true;
+            }
+        });
+        return optionBtn;
+    }
+
+    private Button createStartButton() {
+        Skin startBtnSkin = new Skin(Gdx.files.internal("skins/shade/skin/uiskin.json"));
+        Button startBtn = new TextButton("Start", startBtnSkin);
+        startBtn.setPosition(Gdx.graphics.getWidth()/2-startBtn.getWidth()/2, Gdx.graphics.getHeight()/2 + startBtn.getHeight());
         startBtn.addListener(new InputListener(){
             @Override
             public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
@@ -46,7 +89,7 @@ public class MenuScreen implements Screen {
                 return true;
             }
         });
-        stage.addActor(startBtn);
+        return startBtn;
     }
 
     @Override

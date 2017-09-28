@@ -26,7 +26,7 @@ public class GameMap {
 
     }
 
-    public Hexagon getHexagon(Vector3 coordinates) {ß
+    public Hexagon getHexagon(Vector3 coordinates) {
         return hexagons.get(coordinates);
     }
 

@@ -1,7 +1,9 @@
 package de.maxlo.hex.GameObjects;
 
 import com.badlogic.gdx.math.Vector3;
-import com.badlogic.gdx.scenes.scene2d.ui.List;
+
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * Created by max on 27.09.17.
@@ -42,7 +44,8 @@ public class Travel {
         // if progress reached 100% return true else false
         progress += SPEED * delta;
         if (progress >= 100.0f) {
-            progress = 0.0f;
+            progress = 0.0f;            //reset progress
+            start = wayPoints.get(0);   //set new start HexField
             // Todo start auf nächsten punkt setzen, gucken ob Ziel erreicht wurde
             return true;
         } else
