@@ -61,7 +61,7 @@ public class MenuScreen implements Screen {
     private Button createOptionButton() {
         Skin optionBtnSkin = new Skin(Gdx.files.internal("skins/shade/skin/uiskin.json"));
         Button optionBtn = new TextButton("Option", optionBtnSkin);
-        optionBtn.setPosition(Gdx.graphics.getWidth()/2 - optionBtn.getWidth()/2, Gdx.graphics.getHeight()/2 - optionBtn.getHeight()/2);
+        optionBtn.setPosition(Gdx.graphics.getWidth()/2 - optionBtn.getWidth()/2, Gdx.graphics.getHeight()/2);
         optionBtn.addListener(new InputListener(){
             @Override
             public void touchUp (InputEvent event, float x, float y, int pointer, int button) {

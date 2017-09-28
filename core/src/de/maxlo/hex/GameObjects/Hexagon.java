@@ -77,4 +77,7 @@ public abstract class Hexagon {
         this.texture = texture;
     }
 
+    public Texture getTexture() {
+        return texture;
+    }
 }

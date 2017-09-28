@@ -39,6 +39,7 @@ public class GameScreen implements Screen {
     private Assets assets;
 
     private Stage uiStage;
+    private GameInputHandler gameInputHandler;
     private InputMultiplexer multiplexer;
     private OrthographicCamera camera;
 
@@ -52,7 +53,8 @@ public class GameScreen implements Screen {
         uiStage = new Stage(new ScreenViewport());
         multiplexer = new InputMultiplexer();
         multiplexer.addProcessor(uiStage);
-        multiplexer.addProcessor(new GameInputHandler(this));
+        gameInputHandler = new GameInputHandler(this);
+        multiplexer.addProcessor(gameInputHandler);
         Gdx.input.setInputProcessor(multiplexer);
 
         initUI();
@@ -60,8 +62,6 @@ public class GameScreen implements Screen {
         camera = new OrthographicCamera();
         camera.setToOrtho(false, GAME_WIDTH, GAME_HEIGHT);
         camera.translate(-50, -25);
-
-        //hexTest = new NormalHexagon(new Player(), assets.hexagon);
 
         map = new GameMap(game);
     }
@@ -116,6 +116,7 @@ public class GameScreen implements Screen {
     public void render(float delta) {
 
         map.update(delta);
+        gameInputHandler.update();
 
         Gdx.gl.glClearColor(0.3f, 0.3f, 0.3f, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);

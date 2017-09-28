@@ -2,10 +2,13 @@ package de.maxlo.hex.Helpers;
 
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.math.Vector3;
 
 import de.maxlo.hex.Screens.GameScreen;
+
+import static com.badlogic.gdx.Gdx.input;
 
 /**
  * Created by max on 21.09.17.
@@ -17,23 +20,48 @@ public class GameInputHandler implements InputProcessor {
     private boolean wasDragged = false;
     private int oldX, oldY;
 
+    public boolean keyPressed = false;
+    public int keycode;
+
     public GameInputHandler(GameScreen gs) {
         this.gs = gs;
     }
 
     @Override
     public boolean keyDown(int keycode) {
+        keyPressed = true;
+        this.keycode = keycode;
         return false;
     }
 
     @Override
     public boolean keyUp(int keycode) {
+        keyPressed = false;
         return false;
+    }
+
+    public void update() {
+        if (keyPressed) {
+            switch (keycode) {
+                case Input.Keys.LEFT:
+                    gs.move(new Vector3(25, 0, 0));
+                    break;
+                case Input.Keys.RIGHT:
+                    gs.move(new Vector3(-25, 0, 0));
+                    break;
+                case Input.Keys.UP:
+                    gs.move(new Vector3(0, -25, 0));
+                    break;
+                case Input.Keys.DOWN:
+                    gs.move(new Vector3(0, 25, 0));
+            }
+        }
     }
 
     @Override
     public boolean keyTyped(char character) {
-        return false;
+        gs.move(new Vector3(10, 0, 0));
+        return true;
     }
 
 
