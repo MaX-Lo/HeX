@@ -5,15 +5,25 @@ import com.badlogic.gdx.*;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.ui.Slider;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.ui.WidgetGroup;
+import com.badlogic.gdx.scenes.scene2d.ui.Window;
+import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.scenes.scene2d.utils.DragListener;
+import com.badlogic.gdx.scenes.scene2d.utils.Layout;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
 import java.util.Map;
@@ -36,12 +46,15 @@ public class GameScreen implements Screen {
     private Hex game;
     private Assets assets;
 
+    Label remainingLabel;
+    Label newUnitsLabel;
+    Slider slider;
+
     private Stage uiStage;
     private GameInputHandler gameInputHandler;
     private InputMultiplexer multiplexer;
     private OrthographicCamera camera;
 
-    //Hexagon hexTest;
     private GameMap map;
 
     GameScreen(Hex game) {
@@ -59,9 +72,8 @@ public class GameScreen implements Screen {
 
         camera = new OrthographicCamera();
         camera.setToOrtho(false, GAME_WIDTH, GAME_HEIGHT);
-        camera.translate(-50, -25);
 
-        map = new GameMap(game);
+        map = new GameMap();
     }
 
     private void initUI() {
@@ -87,11 +99,86 @@ public class GameScreen implements Screen {
         uiStage.addActor(menuBtn);
 
         // init remaining Label
-        Label remainingLabel = new Label("remaining: xx", mySkin, "title");
-        remainingLabel.setSize(remainingLabel.getWidth(), remainingLabel.getHeight());
+        remainingLabel = new Label("remaining: xx", mySkin, "title");
         remainingLabel.setPosition(Gdx.graphics.getWidth() - remainingLabel.getWidth() - ui_border, Gdx.graphics.getHeight() - remainingLabel.getHeight() - ui_border);
         uiStage.addActor(remainingLabel);
 
+
+        // init Window with elements for unit movement
+
+        Button cancelBtn = new TextButton("x", mySkin);
+        Button confirmBtn = new TextButton("_/", mySkin);
+
+        Button addBtn = new TextButton("+", mySkin);
+        addBtn.addListener(new InputListener() {
+            @Override
+            public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
+                int units = Math.round(slider.getValue());
+                if (units >= map.getPlayer(1).getRemainingUnits())
+                    return;
+                else {
+                    slider.setValue(units + 1);
+                    remainingLabel.setText(String.valueOf(units + 1));
+                }
+            }
+            @Override
+            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+                return true;
+            }
+        });
+
+        Button subBtn = new TextButton("-", mySkin);
+        subBtn.addListener(new InputListener() {
+            @Override
+            public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
+                int units = Math.round(slider.getValue());
+                if (units >= map.getPlayer(1).getRemainingUnits())
+                    return;
+                else {
+                    slider.setValue(units - 1);
+                    remainingLabel.setText(String.valueOf(units - 1));
+                }
+            }
+            @Override
+            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+                return true;
+            }
+        });
+
+
+        newUnitsLabel = new Label("0", mySkin);
+
+        slider = new Slider(0, 100, 1, false, mySkin);
+        slider.addListener(new DragListener() {
+            @Override
+            public void drag (InputEvent event, float x, float y, int pointer) {
+                setNewUnitsLabel(Math.round(slider.getValue()));
+            }
+        });
+        slider.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                setNewUnitsLabel(Math.round(slider.getValue()));
+            }
+        });
+
+        Table table = new Window("unit movements", mySkin);
+
+        table.setSize(Gdx.graphics.getWidth()/3.5f, Gdx.graphics.getHeight()/6);
+
+        table.add(cancelBtn).space(8).spaceRight(15);
+        table.add(subBtn).space(8);
+        table.add(newUnitsLabel).space(8).expandX();
+        table.add(addBtn).space(8);
+        table.add(confirmBtn).space(8).spaceRight(15);
+        table.row();
+        table.add(slider).colspan(5).expandX();
+
+        uiStage.addActor(table);
+    }
+
+    public void setNewUnitsLabel(int value) {
+        newUnitsLabel.setText(String.valueOf(value));
     }
 
     /**
@@ -100,11 +187,6 @@ public class GameScreen implements Screen {
      * @param coordinates screen coordinates that should be transformed
      * @return transformed coordinates
      */
-    public Vector3 convertScreenPixelToGamePixel(Vector3 coordinates) {
-        coordinates.x = coordinates.x * (GAME_WIDTH / (Gdx.graphics.getWidth() * 1.0f));
-        coordinates.y = coordinates.y * (GAME_HEIGHT / (Gdx.graphics.getHeight() * 1.0f));
-        return coordinates;
-    }
 
     /**
      * Move the game in a given direction
@@ -127,9 +209,11 @@ public class GameScreen implements Screen {
         map.update(delta);
         gameInputHandler.update();
 
+        // refresh remaining units label
+        remainingLabel.setText("remaining: " + String.valueOf(Math.round(Math.floor(map.getPlayer(1).getRemainingUnits()))));
 
         // ...and graphics afterwards
-        Gdx.gl.glClearColor(0.3f, 0.3f, 0.3f, 1);
+        Gdx.gl.glClearColor(0.25f, 0.25f, 0.25f, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         camera.update();
@@ -145,6 +229,8 @@ public class GameScreen implements Screen {
 
         game.batch.begin();
         drawHexagons(game.batch, map.getHexagons());
+        if (map.getSelectedHexagon() != null)
+            drawHexagon(game.batch, map.getSelectedHexagon(), Assets.selectionHex);
         game.batch.end();
 
         uiStage.draw();
@@ -159,7 +245,8 @@ public class GameScreen implements Screen {
     private void drawHexagons(SpriteBatch batch, Map<Vector3, Hexagon> hexagons) {
         for (Vector3 coordinate : hexagons.keySet()) {
             Hexagon hexagon = hexagons.get(coordinate);
-            drawHexagon(batch, coordinate, hexagon);
+            drawHexagon(batch, coordinate, hexagon.getTexture());
+            drawUnitNumber(batch, coordinate, hexagon.getUnits());
         }
     }
 
@@ -167,34 +254,40 @@ public class GameScreen implements Screen {
      * Draws a single hexagon
      *
      * @param batch to draw on
-     * @param coordinates from the hexagon on the map. 0,0 is the bottom left Hexagon. Increasing x means going diagonal
+     * @param hexPos - position from the hexagon on the map. 0,0 is the bottom left Hexagon. Increasing x means going diagonal
      *                    right down. Increasing y means going straight upwards.
-     * @param hexagon the hexagon that should be drawn
+     * @param texture of the hexagon that should be drawn
      */
-    private void drawHexagon(SpriteBatch batch, Vector3 coordinates, Hexagon hexagon) {
-        float x = coordinates.x;
-        float y = coordinates.y;
+    private void drawHexagon(SpriteBatch batch, Vector3 hexPos, Texture texture) {
+        Vector3 screenPos = convertHexCoordinatesToGamePixel(hexPos);
 
-        float hexWidth = assets.greenHex.getWidth();
-        float hexHeight = assets.greenHex.getHeight();
-        float radius = hexWidth / 2.0f;
+        batch.draw(texture, screenPos.x, screenPos.y);
+    }
 
-        // calculate x and y from the hexagon image
-        float screenX = (float) (x * (radius + Math.sqrt((radius * radius) - ((hexHeight * hexHeight) / 4))));
-        float screenY = (float) (-0.5 * hexHeight * x) + (hexHeight * y);
+    private void drawUnitNumber(SpriteBatch batch, Vector3 hexPos, int number) {
+        Vector3 screenPos = convertHexCoordinatesToGamePixel(hexPos);
+        float hexWidth = Assets.greenHex.getWidth();
+        float hexHeight = Assets.greenHex.getHeight();
 
-        batch.draw(hexagon.getTexture(), screenX, screenY);
-
-        // draw number of units in a hexagon on top of it
-        int units = hexagon.getUnits();
+        int units = number;
         assets.layout.setText(assets.fontUnits, String.valueOf(units));
-        assets.fontUnits.draw(batch, String.valueOf(units), screenX+(0.5f*hexWidth)-(0.5f*assets.layout.width), screenY+(0.5f*hexHeight)+(0.5f*assets.layout.height));
+        assets.fontUnits.draw(batch, String.valueOf(units), screenPos.x+(0.5f*hexWidth)-(0.5f*assets.layout.width), screenPos.y + (0.5f*hexHeight) + (0.5f*assets.layout.height));
+    }
 
+
+
+    public void click(Vector3 pos) {
+        pos = convertScreenPixelToHex(pos);
+
+        if (map.getHexagon(pos) == null)
+            map.unselectHexagon();
+        else
+            map.selectHexagon(pos);
     }
 
     @Override
     public void resize(int width, int height) {
-
+        uiStage.getViewport().update(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), true);
     }
 
     @Override
@@ -216,4 +309,79 @@ public class GameScreen implements Screen {
     public void dispose() {
 
     }
+
+    private Vector3 convertHexCoordinatesToGamePixel(Vector3 hexPos) {
+        // draw number of units in a hexagon on top of it
+        float x = hexPos.x;
+        float y = hexPos.y;
+
+        float hexWidth = Assets.greenHex.getWidth();
+        float hexHeight = Assets.greenHex.getHeight();
+        float radius = hexWidth / 2.0f;
+
+        // calculate x and y from the hexagon image
+        float screenX = (float) (x * (radius + Math.sqrt((radius * radius) - ((hexHeight * hexHeight) / 4))));
+        float screenY = (float) (-0.5 * hexHeight * x) + (hexHeight * y);
+
+        return new Vector3(screenX, screenY, 0);
+    }
+
+    public Vector3 convertScreenPixelToGamePixel(Vector3 coordinates) {
+        coordinates.x = coordinates.x * (GAME_WIDTH / (Gdx.graphics.getWidth() * 1.0f));
+        coordinates.y = coordinates.y * (GAME_HEIGHT / (Gdx.graphics.getHeight() * 1.0f));
+        return coordinates;
+    }
+
+    /**
+     * Converts a given screen position to hexagon coordinate
+     *
+     * @param pos screen pos
+     * @return hex pos
+     */
+    public Vector3 convertScreenPixelToHex(Vector3 pos) {
+        // unproject coordinates, because in case screen is shifted or zoomed the coordinates would change otherwise
+        pos = camera.unproject(pos);
+
+        float gameX = pos.x;
+        float gameY = -pos.y;
+
+        float hexWidth = Assets.greenHex.getWidth();
+        float hexHeight = Assets.greenHex.getHeight();
+        float radius = hexWidth/2;
+
+        float x = (float)(gameX/((0.5*hexWidth)+Math.sqrt((radius*radius)-((hexHeight*hexHeight)/4))));
+        int xr = (int)(x-(0.3333));
+        float y = (float)(gameY/hexHeight-(0.5*xr));
+        int yr = (int)y;
+        // negative numbers have to be rounded down
+        if ((x-0.3333)<0) xr -= 1;
+        yr = -yr;
+        y = -y;
+
+        // x and y relative to x0 and y0 of clicked hexagon
+        // xc is between 0 and 1.3333 whereas 1-1.333 has to get checked
+        // yc is between 0 and 1
+        float xc = x-xr;
+        float yc = y-yr;
+
+        if (xc > 1) {
+            if (yc > 0.5) {
+                xc -= 1;
+                float m = (-0.5f*hexHeight)/(0.25f*hexWidth); // Anstieg der Kante oben rechts
+                if (m*xc+1 < yc)
+                    xr += 1;
+                yr += 1;
+            } else {
+                xc -= 1;
+                float m = (0.5f*hexHeight)/(0.25f*hexWidth); // Anstieg der Kante unten rechts
+                if (m*xc > yc) {
+                    xr += 1;
+                }
+            }
+        }
+
+        Gdx.app.log("result", "x:"+String.valueOf(xr) + "y: " + String.valueOf(yr));
+        return new Vector3(xr, yr, 0);
+    }
+
 }

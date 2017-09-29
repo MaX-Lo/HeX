@@ -68,17 +68,20 @@ public class GameInputHandler implements InputProcessor {
 
     @Override
     public boolean touchUp(int screenX, int screenY, int pointer, int button) {
+        // reset helper variables for detecting dragging
         oldX = 0;
         oldY = 0;
+        wasDragged = false;
+
 
         Vector3 pos = new Vector3(screenX, screenY, 0);
 
+        gs.click(pos);
 //        if (!gs.uitouch(pos) && !wasDragged) { // check overlay button touch
 //            if (!gs.touch(pos)) { // check cell touch only if puzzle wasn't dragged
 //                gs.changeMode(); // change click mode
 //            }
 //        }
-        wasDragged = false;
         return true;
     }
 

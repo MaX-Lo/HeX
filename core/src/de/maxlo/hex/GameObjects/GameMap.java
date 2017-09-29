@@ -19,39 +19,53 @@ public class GameMap {
     private List<Travel> travelList;
     private List<Player> players;
 
-    public GameMap(Hex game) {
+    private Vector3 selectedHexagon;
+
+    public GameMap() {
         hexagons = new HashMap<Vector3, Hexagon>();
         players = new ArrayList<Player>();
         travelList = new ArrayList<Travel>();
 
-        test(game);
+        test();
     }
 
+    /**
+     * update game objects, should be called everytime render is called
+     *
+     * @param delta - time difference since last update call
+     */
     public void update(float delta) {
         for (Travel travel : travelList) {
             travel.update(delta);
         }
+
+        for (Hexagon hexagon : hexagons.values())
+            hexagon.getOwner().addUnits(hexagon.update(delta));
+
     }
 
-    public void test(Hex game) {
-        players.add(new Player(Player.Color.yellow));
-        players.add(new Player(Player.Color.green));
-        players.add(new Player(Player.Color.red));
+    public void test() {
+        addPlayer(new Player());
+        addPlayer(new HumanPlayer(Player.Color.yellow));
+        addPlayer(new HumanPlayer(Player.Color.green));
+        addPlayer(new HumanPlayer(Player.Color.red));
+        addPlayer(new HumanPlayer(Player.Color.purple));
+        addPlayer(new HumanPlayer(Player.Color.blue));
 
-        hexagons.put(new Vector3(0, 0, 0), new NormalHexagon(players.get(2), game.getAssets().redHex));
-        hexagons.put(new Vector3(0, 1, 0), new NormalHexagon(players.get(2), game.getAssets().redHex));
-        hexagons.put(new Vector3(0, 2, 0), new NormalHexagon(players.get(2), game.getAssets().redHex));
-        hexagons.put(new Vector3(0, 3, 0), new NormalHexagon(players.get(2), game.getAssets().redHex));
-        hexagons.put(new Vector3(1, 0, 0), new NormalHexagon(players.get(2), game.getAssets().redHex));
-        hexagons.put(new Vector3(1, 1, 0), new NormalHexagon(players.get(2), game.getAssets().redHex));
-        hexagons.put(new Vector3(1, 2, 0), new NormalHexagon(players.get(2), game.getAssets().redHex));
-        hexagons.put(new Vector3(1, 3, 0), new NormalHexagon(players.get(2), game.getAssets().redHex));
-        hexagons.put(new Vector3(2, 0, 0), new NormalHexagon(players.get(2), game.getAssets().redHex));g
-        hexagons.put(new Vector3(2, 1, 0), new NormalHexagon(players.get(2), game.getAssets().greenHex));
-        hexagons.put(new Vector3(2, 2, 0), new NormalHexagon(players.get(2), game.getAssets().greenHex));
-        hexagons.put(new Vector3(2, 3, 0), new NormalHexagon(players.get(0), game.getAssets().greenHex));
-        hexagons.put(new Vector3(3, 0, 0), new NormalHexagon(players.get(1), game.getAssets().greenHex));
-        hexagons.put(new Vector3(3, 1, 0), new NormalHexagon(players.get(2), game.getAssets().greenHex));
+        hexagons.put(new Vector3(0, 0, 0), new NormalHexagon(players.get(2)));
+        hexagons.put(new Vector3(0, 1, 0), new NormalHexagon(players.get(2)));
+        hexagons.put(new Vector3(0, 2, 0), new NormalHexagon(players.get(2)));
+        hexagons.put(new Vector3(0, 3, 0), new NormalHexagon(players.get(2)));
+        hexagons.put(new Vector3(1, 0, 0), new NormalHexagon(players.get(2)));
+        hexagons.put(new Vector3(1, 1, 0), new NormalHexagon(players.get(2)));
+        hexagons.put(new Vector3(1, 2, 0), new NormalHexagon(players.get(2)));
+        hexagons.put(new Vector3(1, 3, 0), new NormalHexagon(players.get(2)));
+        hexagons.put(new Vector3(2, 0, 0), new NormalHexagon(players.get(2)));
+        hexagons.put(new Vector3(2, 1, 0), new NormalHexagon(players.get(2)));
+        hexagons.put(new Vector3(2, 2, 0), new NormalHexagon(players.get(2)));
+        hexagons.put(new Vector3(2, 3, 0), new NormalHexagon(players.get(0)));
+        hexagons.put(new Vector3(3, 0, 0), new NormalHexagon(players.get(1)));
+        hexagons.put(new Vector3(3, 1, 0), new NormalHexagon(players.get(2)));
     }
 
     public void loadMap(String filename) {
@@ -72,7 +86,33 @@ public class GameMap {
         }
     }
 
+    public void addPlayer(Player newPlayer) {
+        for (Player player : players)
+            if (player.getColor().equals(newPlayer.getColor()))
+                throw new IllegalArgumentException("Player with that color already exists!");
+
+        players.add(newPlayer);
+    }
+
     public Map<Vector3, Hexagon> getHexagons() {
         return hexagons;
+    }
+
+    public Player getPlayer(int index) {
+        return players.get(index);
+    }
+
+    public void selectHexagon(Vector3 pos) {
+        if (hexagons.get(pos) == null)
+            throw new IllegalArgumentException("Hexagon doesn't exist!");
+        selectedHexagon = pos;
+    }
+
+    public void unselectHexagon() {
+        selectedHexagon = null;
+    }
+
+    public Vector3 getSelectedHexagon() {
+        return selectedHexagon;
     }
 }

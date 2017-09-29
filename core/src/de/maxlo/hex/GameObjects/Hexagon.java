@@ -14,11 +14,10 @@ public abstract class Hexagon {
 
     private Texture texture;
 
-    public Hexagon(Player owner, Texture texture) {
+    public Hexagon(Player owner) {
         this.owner = owner;
-        this.texture = texture;
         units = 1;
-        spawn_rate = 1.0f;
+        spawn_rate = 0.5f;
     }
 
     public Hexagon(Player owner, Texture texture, int units, float spawn_rate) {
@@ -26,6 +25,13 @@ public abstract class Hexagon {
         this.texture = texture;
         this.units = units;
         this.spawn_rate = spawn_rate;
+    }
+
+    public float update(float delta) {
+        if (owner.getColor().equals(Player.Color.none))
+            return 0.0f;
+
+        return spawn_rate*delta;
     }
 
     public void increase(int units) throws IllegalArgumentException {
