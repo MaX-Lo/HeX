@@ -38,9 +38,20 @@ public class GameMap {
         players.add(new Player(Player.Color.green));
         players.add(new Player(Player.Color.red));
 
-        hexagons.put(new Vector3(0, 2, 0), new NormalHexagon(players.get(0), game.getAssets().yellowHex));
-        hexagons.put(new Vector3(0, 0, 0), new NormalHexagon(players.get(1), game.getAssets().greenHex));
+        hexagons.put(new Vector3(0, 0, 0), new NormalHexagon(players.get(2), game.getAssets().redHex));
+        hexagons.put(new Vector3(0, 1, 0), new NormalHexagon(players.get(2), game.getAssets().redHex));
+        hexagons.put(new Vector3(0, 2, 0), new NormalHexagon(players.get(2), game.getAssets().redHex));
+        hexagons.put(new Vector3(0, 3, 0), new NormalHexagon(players.get(2), game.getAssets().redHex));
+        hexagons.put(new Vector3(1, 0, 0), new NormalHexagon(players.get(2), game.getAssets().redHex));
+        hexagons.put(new Vector3(1, 1, 0), new NormalHexagon(players.get(2), game.getAssets().redHex));
         hexagons.put(new Vector3(1, 2, 0), new NormalHexagon(players.get(2), game.getAssets().redHex));
+        hexagons.put(new Vector3(1, 3, 0), new NormalHexagon(players.get(2), game.getAssets().redHex));
+        hexagons.put(new Vector3(2, 0, 0), new NormalHexagon(players.get(2), game.getAssets().redHex));g
+        hexagons.put(new Vector3(2, 1, 0), new NormalHexagon(players.get(2), game.getAssets().greenHex));
+        hexagons.put(new Vector3(2, 2, 0), new NormalHexagon(players.get(2), game.getAssets().greenHex));
+        hexagons.put(new Vector3(2, 3, 0), new NormalHexagon(players.get(0), game.getAssets().greenHex));
+        hexagons.put(new Vector3(3, 0, 0), new NormalHexagon(players.get(1), game.getAssets().greenHex));
+        hexagons.put(new Vector3(3, 1, 0), new NormalHexagon(players.get(2), game.getAssets().greenHex));
     }
 
     public void loadMap(String filename) {

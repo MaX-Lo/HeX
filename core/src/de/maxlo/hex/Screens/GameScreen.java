@@ -16,12 +16,10 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
-import java.util.Iterator;
+import java.util.Map;
 
 import de.maxlo.hex.GameObjects.GameMap;
 import de.maxlo.hex.GameObjects.Hexagon;
-import de.maxlo.hex.GameObjects.NormalHexagon;
-import de.maxlo.hex.GameObjects.Player;
 import de.maxlo.hex.Helpers.Assets;
 import de.maxlo.hex.Helpers.GameInputHandler;
 import de.maxlo.hex.Hex;
@@ -96,13 +94,23 @@ public class GameScreen implements Screen {
 
     }
 
+    /**
+     * Screen coordinates differ from game coordinates and therefore have to be transformed
+     *
+     * @param coordinates screen coordinates that should be transformed
+     * @return transformed coordinates
+     */
     public Vector3 convertScreenPixelToGamePixel(Vector3 coordinates) {
-        // Screen coordinates differ from game coordinates and have to be transformed
         coordinates.x = coordinates.x * (GAME_WIDTH / (Gdx.graphics.getWidth() * 1.0f));
         coordinates.y = coordinates.y * (GAME_HEIGHT / (Gdx.graphics.getHeight() * 1.0f));
         return coordinates;
     }
 
+    /**
+     * Move the game in a given direction
+     *
+     * @param delta - amount the game should be moved
+     */
     public void move(Vector3 delta) {
         camera.translate(delta.x, delta.y);
     }
@@ -115,9 +123,12 @@ public class GameScreen implements Screen {
     @Override
     public void render(float delta) {
 
+        // update game logic and objects at first...
         map.update(delta);
         gameInputHandler.update();
 
+
+        // ...and graphics afterwards
         Gdx.gl.glClearColor(0.3f, 0.3f, 0.3f, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
@@ -133,20 +144,33 @@ public class GameScreen implements Screen {
         uiStage.act();
 
         game.batch.begin();
-        drawHexagons(game.batch);
-
+        drawHexagons(game.batch, map.getHexagons());
         game.batch.end();
 
         uiStage.draw();
     }
 
-    private void drawHexagons(SpriteBatch batch) {
-        for (Vector3 coordinate : map.getHexagons().keySet()) {
-            Hexagon hexagon = map.getHexagons().get(coordinate);
+    /**
+     * Draws the Hexagons onto the given Spritebatch
+     *
+     * @param batch to draw on
+     * @param hexagons map containing hexagons with coordinates as key
+     */
+    private void drawHexagons(SpriteBatch batch, Map<Vector3, Hexagon> hexagons) {
+        for (Vector3 coordinate : hexagons.keySet()) {
+            Hexagon hexagon = hexagons.get(coordinate);
             drawHexagon(batch, coordinate, hexagon);
         }
     }
 
+    /**
+     * Draws a single hexagon
+     *
+     * @param batch to draw on
+     * @param coordinates from the hexagon on the map. 0,0 is the bottom left Hexagon. Increasing x means going diagonal
+     *                    right down. Increasing y means going straight upwards.
+     * @param hexagon the hexagon that should be drawn
+     */
     private void drawHexagon(SpriteBatch batch, Vector3 coordinates, Hexagon hexagon) {
         float x = coordinates.x;
         float y = coordinates.y;
@@ -160,6 +184,11 @@ public class GameScreen implements Screen {
         float screenY = (float) (-0.5 * hexHeight * x) + (hexHeight * y);
 
         batch.draw(hexagon.getTexture(), screenX, screenY);
+
+        // draw number of units in a hexagon on top of it
+        int units = hexagon.getUnits();
+        assets.layout.setText(assets.fontUnits, String.valueOf(units));
+        assets.fontUnits.draw(batch, String.valueOf(units), screenX+(0.5f*hexWidth)-(0.5f*assets.layout.width), screenY+(0.5f*hexHeight)+(0.5f*assets.layout.height));
 
     }
 

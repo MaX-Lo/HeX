@@ -13,6 +13,7 @@ public class Assets {
 
     public BitmapFont font;
     public BitmapFont fontMenu;
+    public BitmapFont fontUnits;
 
     public GlyphLayout layout;
 
@@ -40,15 +41,25 @@ public class Assets {
     private void loadFonts() {
         // init font
         FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("fonts/open_sans_regular.ttf"));
+
         FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
         parameter.size = 100;
+        font = generator.generateFont(parameter);
+
         FreeTypeFontGenerator.FreeTypeFontParameter parameterMenu = new FreeTypeFontGenerator.FreeTypeFontParameter();
         parameterMenu.size = 35;
-        font = generator.generateFont(parameter);
         fontMenu = generator.generateFont(parameterMenu);
+
+        FreeTypeFontGenerator.FreeTypeFontParameter unitsParameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
+        unitsParameter.size = 60;
+        fontUnits = generator.generateFont(unitsParameter);
+
         layout = new GlyphLayout(); // Layout needed for text measurements
     }
 
+    /**
+     * should be called after it's sure that all textures are loaded into the assetmanager
+     */
     public void done() {
         blackHex = manager.get("textures/hexagon_black.png");
         blueHex = manager.get("textures/hexagon_blue.png");
