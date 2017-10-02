@@ -20,6 +20,12 @@ public abstract class Hexagon {
         spawn_rate = 0.5f;
     }
 
+    public Hexagon(Player owner, int units) {
+        this.owner = owner;
+        this.units = units;
+        spawn_rate = 0.5f;
+    }
+
     public Hexagon(Player owner, Texture texture, int units, float spawn_rate) {
         this.owner = owner;
         this.texture = texture;

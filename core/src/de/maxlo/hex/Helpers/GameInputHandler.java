@@ -31,37 +31,44 @@ public class GameInputHandler implements InputProcessor {
     public boolean keyDown(int keycode) {
         keyPressed = true;
         this.keycode = keycode;
-        return false;
+        return true;
     }
 
     @Override
     public boolean keyUp(int keycode) {
         keyPressed = false;
-        return false;
+        return true;
     }
 
     public void update() {
         if (keyPressed) {
             switch (keycode) {
+                // arrow keys
                 case Input.Keys.LEFT:
-                    gs.move(new Vector3(25, 0, 0));
-                    break;
-                case Input.Keys.RIGHT:
                     gs.move(new Vector3(-25, 0, 0));
                     break;
+                case Input.Keys.RIGHT:
+                    gs.move(new Vector3(25, 0, 0));
+                    break;
                 case Input.Keys.UP:
-                    gs.move(new Vector3(0, -25, 0));
+                    gs.move(new Vector3(0, 25, 0));
                     break;
                 case Input.Keys.DOWN:
-                    gs.move(new Vector3(0, 25, 0));
+                    gs.move(new Vector3(0, -25, 0));
+                    break;
+                // +/- zoom keys
+                case Input.Keys.PLUS:
+                    gs.zoom(-0.05f);
+                    break;
+                case Input.Keys.MINUS:
+                    gs.zoom(0.05f);
             }
         }
     }
 
     @Override
     public boolean keyTyped(char character) {
-        gs.move(new Vector3(10, 0, 0));
-        return true;
+        return false;
     }
 
 

@@ -18,12 +18,8 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Slider;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
-import com.badlogic.gdx.scenes.scene2d.ui.WidgetGroup;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
-import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
-import com.badlogic.gdx.scenes.scene2d.utils.DragListener;
-import com.badlogic.gdx.scenes.scene2d.utils.Layout;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
 import java.util.Map;
@@ -49,6 +45,7 @@ public class GameScreen implements Screen {
     Label remainingLabel;
     Label newUnitsLabel;
     Slider slider;
+    Table table;
 
     private Stage uiStage;
     private GameInputHandler gameInputHandler;
@@ -107,7 +104,31 @@ public class GameScreen implements Screen {
         // init Window with elements for unit movement
 
         Button cancelBtn = new TextButton("x", mySkin);
+        cancelBtn.addListener(new InputListener() {
+            @Override
+            public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
+                hideUnitMovement();
+            }
+            @Override
+            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+                return true;
+            }
+        });
+
         Button confirmBtn = new TextButton("_/", mySkin);
+        confirmBtn.addListener(new InputListener() {
+            @Override
+            public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
+                int units = (int)Math.floor(slider.getValue());
+                map.getHexagon(map.getSelectedHexagon()).increase(units);
+                map.getPlayer(1).decreaseRemainingUnits(units);
+                hideUnitMovement();
+            }
+            @Override
+            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+                return true;
+            }
+        });
 
         Button addBtn = new TextButton("+", mySkin);
         addBtn.addListener(new InputListener() {
@@ -118,7 +139,7 @@ public class GameScreen implements Screen {
                     return;
                 else {
                     slider.setValue(units + 1);
-                    remainingLabel.setText(String.valueOf(units + 1));
+                    remainingLabel.setText(String.valueOf(Math.floor(units)));
                 }
             }
             @Override
@@ -136,7 +157,7 @@ public class GameScreen implements Screen {
                     return;
                 else {
                     slider.setValue(units - 1);
-                    remainingLabel.setText(String.valueOf(units - 1));
+                    remainingLabel.setText(String.valueOf(units));
                 }
             }
             @Override
@@ -149,20 +170,18 @@ public class GameScreen implements Screen {
         newUnitsLabel = new Label("0", mySkin);
 
         slider = new Slider(0, 100, 1, false, mySkin);
-        slider.addListener(new DragListener() {
-            @Override
-            public void drag (InputEvent event, float x, float y, int pointer) {
-                setNewUnitsLabel(Math.round(slider.getValue()));
-            }
-        });
+
         slider.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
+                if (slider.getValue() > map.getPlayer(1).getRemainingUnits())
+                    slider.setValue(map.getPlayer(1).getRemainingUnits());
+
                 setNewUnitsLabel(Math.round(slider.getValue()));
             }
         });
 
-        Table table = new Window("unit movements", mySkin);
+        table = new Window("unit movements", mySkin);
 
         table.setSize(Gdx.graphics.getWidth()/3.5f, Gdx.graphics.getHeight()/6);
 
@@ -173,6 +192,7 @@ public class GameScreen implements Screen {
         table.add(confirmBtn).space(8).spaceRight(15);
         table.row();
         table.add(slider).colspan(5).expandX();
+        table.setVisible(false);
 
         uiStage.addActor(table);
     }
@@ -195,6 +215,22 @@ public class GameScreen implements Screen {
      */
     public void move(Vector3 delta) {
         camera.translate(delta.x, delta.y);
+    }
+
+    /**
+     * Zoom in or out.
+     * Number greater 0 -> zoom in.
+     * Number smaller 0 -> zoom out.
+     *
+     * @param amount - set how fast to zoom
+     */
+    public void zoom(float amount) {
+        if (camera.zoom+amount < 0.2f)
+            camera.zoom = 0.2f;
+        else if (camera.zoom+amount > 4)
+            camera.zoom = 4;
+
+        camera.zoom += amount;
     }
 
     @Override
@@ -274,15 +310,26 @@ public class GameScreen implements Screen {
         assets.fontUnits.draw(batch, String.valueOf(units), screenPos.x+(0.5f*hexWidth)-(0.5f*assets.layout.width), screenPos.y + (0.5f*hexHeight) + (0.5f*assets.layout.height));
     }
 
+    public void hideUnitMovement() {
+        table.setVisible(false);
+        slider.setValue(0);
+        newUnitsLabel.setText("0");
+    }
 
+    public void showUnitMovement() {
+        table.setVisible(true);
+    }
 
     public void click(Vector3 pos) {
         pos = convertScreenPixelToHex(pos);
 
-        if (map.getHexagon(pos) == null)
+        if (map.getHexagon(pos) == null) {
             map.unselectHexagon();
-        else
+            hideUnitMovement();
+        } else if (map.getHexagon(pos).getOwner().equals(map.getPlayer(1))) {
             map.selectHexagon(pos);
+            showUnitMovement();
+        }
     }
 
     @Override
@@ -380,7 +427,6 @@ public class GameScreen implements Screen {
             }
         }
 
-        Gdx.app.log("result", "x:"+String.valueOf(xr) + "y: " + String.valueOf(yr));
         return new Vector3(xr, yr, 0);
     }
 

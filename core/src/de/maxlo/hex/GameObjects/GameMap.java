@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import de.maxlo.hex.Helpers.MapGenerator;
 import de.maxlo.hex.Hex;
 
 /**
@@ -16,7 +17,7 @@ import de.maxlo.hex.Hex;
 public class GameMap {
 
     private Map<Vector3, Hexagon> hexagons;
-    private List<Travel> travelList;
+    private List<Travel> travelList; // contains all current movements of units
     private List<Player> players;
 
     private Vector3 selectedHexagon;
@@ -44,54 +45,28 @@ public class GameMap {
 
     }
 
-    public void test() {
-        addPlayer(new Player());
-        addPlayer(new HumanPlayer(Player.Color.yellow));
-        addPlayer(new HumanPlayer(Player.Color.green));
-        addPlayer(new HumanPlayer(Player.Color.red));
-        addPlayer(new HumanPlayer(Player.Color.purple));
-        addPlayer(new HumanPlayer(Player.Color.blue));
+    private void test() {
 
-        hexagons.put(new Vector3(0, 0, 0), new NormalHexagon(players.get(2)));
-        hexagons.put(new Vector3(0, 1, 0), new NormalHexagon(players.get(2)));
-        hexagons.put(new Vector3(0, 2, 0), new NormalHexagon(players.get(2)));
-        hexagons.put(new Vector3(0, 3, 0), new NormalHexagon(players.get(2)));
-        hexagons.put(new Vector3(1, 0, 0), new NormalHexagon(players.get(2)));
-        hexagons.put(new Vector3(1, 1, 0), new NormalHexagon(players.get(2)));
-        hexagons.put(new Vector3(1, 2, 0), new NormalHexagon(players.get(2)));
-        hexagons.put(new Vector3(1, 3, 0), new NormalHexagon(players.get(2)));
-        hexagons.put(new Vector3(2, 0, 0), new NormalHexagon(players.get(2)));
-        hexagons.put(new Vector3(2, 1, 0), new NormalHexagon(players.get(2)));
-        hexagons.put(new Vector3(2, 2, 0), new NormalHexagon(players.get(2)));
-        hexagons.put(new Vector3(2, 3, 0), new NormalHexagon(players.get(0)));
-        hexagons.put(new Vector3(3, 0, 0), new NormalHexagon(players.get(1)));
-        hexagons.put(new Vector3(3, 1, 0), new NormalHexagon(players.get(2)));
+        MapGenerator mapGenerator = new MapGenerator(12, 8, 3, 1);
+        players = mapGenerator.getPlayers();
+        hexagons = mapGenerator.getMap();
     }
 
-    public void loadMap(String filename) {
-
+    /**
+     * @param hexPos - coordinates of the hexagon
+     * @return hexagon corresponding to the given coordinates
+     */
+    public Hexagon getHexagon(Vector3 hexPos) {
+        return hexagons.get(hexPos);
     }
 
-    public Hexagon getHexagon(Vector3 coordinates) {
-        return hexagons.get(coordinates);
-    }
-
-    public boolean setHexagon(Hexagon hexagon, Vector3 coordinates) {
-        // sets a specified hexagon returns false if field does not exist
-        if (hexagons.get(coordinates) == null)
-            return false;
-        else {
-            hexagons.put(coordinates, hexagon);
-            return true;
-        }
-    }
-
-    public void addPlayer(Player newPlayer) {
-        for (Player player : players)
-            if (player.getColor().equals(newPlayer.getColor()))
-                throw new IllegalArgumentException("Player with that color already exists!");
-
-        players.add(newPlayer);
+    /**
+     * @param hexagon to be set
+     * @param hexPos - position of the hexagon
+     */
+    public void setHexagon(Hexagon hexagon, Vector3 hexPos) {
+        // sets a specified hexagon
+        hexagons.put(hexPos, hexagon);
     }
 
     public Map<Vector3, Hexagon> getHexagons() {

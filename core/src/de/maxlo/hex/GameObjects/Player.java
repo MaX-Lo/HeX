@@ -45,4 +45,14 @@ public class Player {
     public void setRemainingUnits(float remainingUnits) {
         this.remainingUnits = remainingUnits;
     }
+
+    public void decreaseRemainingUnits(float units) {
+        if (remainingUnits - units < 0)
+            throw new IllegalArgumentException("Number may not be negative!");
+        remainingUnits -= units;
+    }
+
+    public void increaseRemainingUnits(float units) {
+        remainingUnits += units;
+    }
 }

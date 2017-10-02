@@ -12,7 +12,15 @@ public class NormalHexagon extends Hexagon {
 
     public NormalHexagon(Player owner) {
         super(owner);
+        initTexture(owner);
+    }
 
+    public NormalHexagon(Player owner, int units) {
+        super(owner, units);
+        initTexture(owner);
+    }
+
+    private void initTexture(Player owner) {
         switch (owner.getColor()) {
             case none:
                 setTexture(Assets.blackHex);
