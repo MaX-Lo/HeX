@@ -10,34 +10,33 @@ public abstract class Hexagon {
 
     private int units;
     private Player owner;
-    private float spawn_rate;
+    private float spawnRate;
 
     private Texture texture;
 
     public Hexagon(Player owner) {
         this.owner = owner;
         units = 1;
-        spawn_rate = 0.5f;
+        spawnRate = 0.5f;
     }
 
     public Hexagon(Player owner, int units) {
         this.owner = owner;
         this.units = units;
-        spawn_rate = 0.5f;
+        spawnRate = 0.5f;
     }
 
-    public Hexagon(Player owner, Texture texture, int units, float spawn_rate) {
+    public Hexagon(Player owner, int units, float spawnRate) {
         this.owner = owner;
-        this.texture = texture;
         this.units = units;
-        this.spawn_rate = spawn_rate;
+        this.spawnRate = spawnRate;
     }
 
     public float update(float delta) {
         if (owner.getColor().equals(Player.Color.none))
             return 0.0f;
 
-        return spawn_rate*delta;
+        return spawnRate *delta;
     }
 
     public void increase(int units) throws IllegalArgumentException {
@@ -69,6 +68,8 @@ public abstract class Hexagon {
         this.units = units;
     }
 
+    public abstract void initTexture(Player owner);
+
     public Player getOwner() {
         return owner;
     }
@@ -77,12 +78,12 @@ public abstract class Hexagon {
         this.owner = owner;
     }
 
-    public float getSpawn_rate() {
-        return spawn_rate;
+    public float getSpawnRate() {
+        return spawnRate;
     }
 
-    public void setSpawn_rate(float spawn_rate) {
-        this.spawn_rate = spawn_rate;
+    public void setSpawnRate(float spawnRate) {
+        this.spawnRate = spawnRate;
     }
 
     public void setTexture(Texture texture) {
@@ -92,4 +93,7 @@ public abstract class Hexagon {
     public Texture getTexture() {
         return texture;
     }
+
+    @Override
+    public abstract String toString();
 }

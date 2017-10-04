@@ -1,6 +1,7 @@
 package de.maxlo.hex.GameObjects;
 
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.utils.ObjectMap;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -8,7 +9,6 @@ import java.util.List;
 import java.util.Map;
 
 import de.maxlo.hex.Helpers.MapGenerator;
-import de.maxlo.hex.Hex;
 
 /**
  * Created by max on 21.09.17.
@@ -16,14 +16,14 @@ import de.maxlo.hex.Hex;
 
 public class GameMap {
 
-    private Map<Vector3, Hexagon> hexagons;
+    private ObjectMap<Vector3, Hexagon> hexagons;
     private List<Travel> travelList; // contains all current movements of units
     private List<Player> players;
 
     private Vector3 selectedHexagon;
 
     public GameMap() {
-        hexagons = new HashMap<Vector3, Hexagon>();
+        hexagons = new ObjectMap<Vector3, Hexagon>();
         players = new ArrayList<Player>();
         travelList = new ArrayList<Travel>();
 
@@ -69,7 +69,7 @@ public class GameMap {
         hexagons.put(hexPos, hexagon);
     }
 
-    public Map<Vector3, Hexagon> getHexagons() {
+    public ObjectMap<Vector3, Hexagon> getHexagons() {
         return hexagons;
     }
 

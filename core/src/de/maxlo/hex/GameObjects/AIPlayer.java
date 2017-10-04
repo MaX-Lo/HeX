@@ -9,4 +9,9 @@ public class AIPlayer extends Player {
     public AIPlayer(Color color) {
         super(color);
     }
+
+    @Override
+    public String toString() {
+        return "de.maxlo.hex.GameObjects.AIPlayer";
+    }
 }

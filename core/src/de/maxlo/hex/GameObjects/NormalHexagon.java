@@ -1,7 +1,5 @@
 package de.maxlo.hex.GameObjects;
 
-import com.badlogic.gdx.graphics.Texture;
-
 import de.maxlo.hex.Helpers.Assets;
 
 /**
@@ -20,7 +18,17 @@ public class NormalHexagon extends Hexagon {
         initTexture(owner);
     }
 
-    private void initTexture(Player owner) {
+    public NormalHexagon(Player owner, int units, float spawnrate) {
+        super(owner, units, spawnrate);
+        initTexture(owner);
+    }
+
+    public NormalHexagon(Player owner, Integer units, Float spawnrate) {
+        super(owner, units, spawnrate);
+        initTexture(owner);
+    }
+
+    public void initTexture(Player owner) {
         switch (owner.getColor()) {
             case none:
                 setTexture(Assets.blackHex);
@@ -43,5 +51,10 @@ public class NormalHexagon extends Hexagon {
             default:
                 throw new IllegalArgumentException("Unknown color");
         }
+    }
+
+    @Override
+    public String toString() {
+        return "de.maxlo.hex.GameObjects.NormalHexagon";
     }
 }

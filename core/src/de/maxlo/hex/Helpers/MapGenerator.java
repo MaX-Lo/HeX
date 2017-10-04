@@ -1,13 +1,10 @@
 package de.maxlo.hex.Helpers;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.math.Vector3;
-import com.badlogic.gdx.utils.StringBuilder;
+import com.badlogic.gdx.utils.ObjectMap;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 
 import de.maxlo.hex.GameObjects.AIPlayer;
@@ -27,7 +24,7 @@ public class MapGenerator {
     private int width;
     private int height;
 
-    private Map<Vector3, Hexagon> map;
+    private ObjectMap<Vector3, Hexagon> map;
     private List<Player> players;
     private Player neutralPlayer;
 
@@ -42,13 +39,20 @@ public class MapGenerator {
         this.width = width;
         this.height = height;
 
-        map = new HashMap<Vector3, Hexagon>();
+        map = new ObjectMap<Vector3, Hexagon>();
         players = new ArrayList<Player>();
 
-        generatePlayers(humanPlayer, aiPlayer);
-        generateRawMap();
-        refineMap1();
-        locatePlayers();
+//        generatePlayers(humanPlayer, aiPlayer);
+//        generateRawMap();
+//        refineMap1();
+//        locatePlayers();
+//
+//        FileHandler fileHandler = new FileHandler();
+//        fileHandler.saveGame("level1.dat", map, players);
+        FileHandler fileHandler = new FileHandler();
+        fileHandler.loadGame("level1.dat");
+        players = fileHandler.getPlayers();
+        map = fileHandler.getHexagonMap();
     }
 
 
@@ -113,7 +117,7 @@ public class MapGenerator {
      *  2) neighbours of created holes get deleted with a certain probability
      */
     private void refineMap1() {
-        int numberOfHexagons = map.size();
+        int numberOfHexagons = map.size;
         int numberOfRandomHoles = numberOfHexagons/4;
 
         Random random = new Random();
@@ -123,9 +127,6 @@ public class MapGenerator {
             map.remove(hexToRemove);
             removed.add(new Vector3(hexToRemove));
         }
-
-        Gdx.app.log("Map", "generation");
-        Gdx.app.log("After first removing: ", String.valueOf(map.size()));
 
         for (int i=0; i<removed.size(); i++) {
             Vector3 pos = removed.remove(0);
@@ -139,7 +140,6 @@ public class MapGenerator {
             }
 
         }
-        Gdx.app.log("After second removing: ", String.valueOf(map.size()));
     }
 
     /**
@@ -157,7 +157,7 @@ public class MapGenerator {
      * @return a map position
      */
     private Vector3 getRandomMapPos() {
-        if (map.size() < 1)
+        if (map.size < 1)
             return null;
 
         Random random = new Random();
@@ -167,11 +167,9 @@ public class MapGenerator {
         while (!found) {
             pos.x = random.nextInt(width);
             pos.y = random.nextInt(height) + (int)(pos.x/2); // addition is needed for the offset
-            Gdx.app.log("before check:", String.valueOf(pos.x) + " " + String.valueOf(pos.y));
             if (map.get(pos) != null) {
                 found = true;
                 }
-            Gdx.app.log("check:", String.valueOf(found));
         }
         return pos;
     }
@@ -198,7 +196,7 @@ public class MapGenerator {
         return players;
     }
 
-    public Map<Vector3, Hexagon> getMap() {
+    public ObjectMap<Vector3, Hexagon> getMap() {
         return map;
     }
 }

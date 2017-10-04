@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.input.GestureDetector;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
@@ -20,13 +21,13 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
+import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
-
-import java.util.Map;
 
 import de.maxlo.hex.GameObjects.GameMap;
 import de.maxlo.hex.GameObjects.Hexagon;
 import de.maxlo.hex.Helpers.Assets;
+import de.maxlo.hex.Helpers.FileHandler;
 import de.maxlo.hex.Helpers.GameInputHandler;
 import de.maxlo.hex.Hex;
 
@@ -36,33 +37,43 @@ import de.maxlo.hex.Hex;
 
 public class GameScreen implements Screen {
 
+    // game size, may differ from screen resolution
     private static final int GAME_WIDTH = 1920;
     private static final int GAME_HEIGHT = 1080;
 
     private Hex game;
     private Assets assets;
 
-    Label remainingLabel;
-    Label newUnitsLabel;
-    Slider slider;
-    Table table;
-
     private Stage uiStage;
     private GameInputHandler gameInputHandler;
-    private InputMultiplexer multiplexer;
     private OrthographicCamera camera;
 
     private GameMap map;
+
+    // ui elements
+    private Label remainingLabel;
+    private Label newUnitsLabel;
+    private Slider slider;
+    private Table table;
+
 
     GameScreen(Hex game) {
         this.game = game;
         assets = game.getAssets();
 
         uiStage = new Stage(new ScreenViewport());
-        multiplexer = new InputMultiplexer();
-        multiplexer.addProcessor(uiStage);
         gameInputHandler = new GameInputHandler(this);
+
+        // multiplexer for handling different Input levels
+        InputMultiplexer multiplexer = new InputMultiplexer();
+        // the first thing is always to check if it has to do with the ui
+        multiplexer.addProcessor(uiStage);
+        // if it wasn't the ui it's maybe a gesture like pinching?
+        multiplexer.addProcessor(new GestureDetector(gameInputHandler));
+        // if it's not a gesture too it's probably a standard touch on our game field
         multiplexer.addProcessor(gameInputHandler);
+
+        // LibGDX needs to know where gesture, keyboard and touch input will be handled
         Gdx.input.setInputProcessor(multiplexer);
 
         initUI();
@@ -202,19 +213,13 @@ public class GameScreen implements Screen {
     }
 
     /**
-     * Screen coordinates differ from game coordinates and therefore have to be transformed
-     *
-     * @param coordinates screen coordinates that should be transformed
-     * @return transformed coordinates
-     */
-
-    /**
      * Move the game in a given direction
      *
      * @param delta - amount the game should be moved
      */
     public void move(Vector3 delta) {
-        camera.translate(delta.x, delta.y);
+        // depending on zoom the translation has to be increased or decreased by the current zoom
+        camera.translate(delta.x*camera.zoom, delta.y*camera.zoom);
     }
 
     /**
@@ -225,12 +230,14 @@ public class GameScreen implements Screen {
      * @param amount - set how fast to zoom
      */
     public void zoom(float amount) {
-        if (camera.zoom+amount < 0.2f)
-            camera.zoom = 0.2f;
-        else if (camera.zoom+amount > 4)
-            camera.zoom = 4;
+        FileHandler fileHandler = new FileHandler();
+        fileHandler.loadGame("level1.dat");
 
         camera.zoom += amount;
+        if (camera.zoom < 0.2f)
+            camera.zoom = 0.2f;
+        else if (camera.zoom > 4)
+            camera.zoom = 4;
     }
 
     @Override
@@ -255,12 +262,6 @@ public class GameScreen implements Screen {
         camera.update();
         game.batch.setProjectionMatrix(camera.combined);
 
-        game.batch.begin();
-        assets.layout.setText(assets.font, "HeX");
-        assets.font.draw(game.batch, "HeX", (0.5f*Gdx.graphics.getWidth())-(0.5f*assets.layout.width), (0.5f*Gdx.graphics.getHeight())+(0.5f*assets.layout.height));
-
-        game.batch.end();
-
         uiStage.act();
 
         game.batch.begin();
@@ -278,8 +279,8 @@ public class GameScreen implements Screen {
      * @param batch to draw on
      * @param hexagons map containing hexagons with coordinates as key
      */
-    private void drawHexagons(SpriteBatch batch, Map<Vector3, Hexagon> hexagons) {
-        for (Vector3 coordinate : hexagons.keySet()) {
+    private void drawHexagons(SpriteBatch batch, ObjectMap<Vector3, Hexagon> hexagons) {
+        for (Vector3 coordinate : hexagons.keys()) {
             Hexagon hexagon = hexagons.get(coordinate);
             drawHexagon(batch, coordinate, hexagon.getTexture());
             drawUnitNumber(batch, coordinate, hexagon.getUnits());
@@ -296,33 +297,51 @@ public class GameScreen implements Screen {
      */
     private void drawHexagon(SpriteBatch batch, Vector3 hexPos, Texture texture) {
         Vector3 screenPos = convertHexCoordinatesToGamePixel(hexPos);
-
         batch.draw(texture, screenPos.x, screenPos.y);
     }
 
-    private void drawUnitNumber(SpriteBatch batch, Vector3 hexPos, int number) {
+    /**
+     * Draw a number on the given Hexagon pos
+     *
+     * @param batch to draw on
+     * @param hexPos - position from the hexagon on the map. 0,0 is the bottom left Hexagon. Increasing x means going diagonal
+     *                    right down. Increasing y means going straight upwards.
+     * @param units - number that should be drawn
+     */
+    private void drawUnitNumber(SpriteBatch batch, Vector3 hexPos, int units) {
         Vector3 screenPos = convertHexCoordinatesToGamePixel(hexPos);
         float hexWidth = Assets.greenHex.getWidth();
         float hexHeight = Assets.greenHex.getHeight();
 
-        int units = number;
         assets.layout.setText(assets.fontUnits, String.valueOf(units));
         assets.fontUnits.draw(batch, String.valueOf(units), screenPos.x+(0.5f*hexWidth)-(0.5f*assets.layout.width), screenPos.y + (0.5f*hexHeight) + (0.5f*assets.layout.height));
     }
 
+    /**
+     * hide the ui for unit movements
+     */
     public void hideUnitMovement() {
         table.setVisible(false);
         slider.setValue(0);
         newUnitsLabel.setText("0");
     }
 
+    /**
+     * show the ui for unit movements
+     */
     public void showUnitMovement() {
         table.setVisible(true);
     }
 
+    /**
+     * Should be called after game screen got clicked/touched
+     *
+     * @param pos - Screen pixel that got clicked
+     */
     public void click(Vector3 pos) {
         pos = convertScreenPixelToHex(pos);
 
+        // check whether a hexagon got clicked
         if (map.getHexagon(pos) == null) {
             map.unselectHexagon();
             hideUnitMovement();
@@ -332,6 +351,12 @@ public class GameScreen implements Screen {
         }
     }
 
+    /**
+     * gets called after the window size changed
+     *
+     * @param width of the display
+     * @param height of the display
+     */
     @Override
     public void resize(int width, int height) {
         uiStage.getViewport().update(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), true);
@@ -357,6 +382,12 @@ public class GameScreen implements Screen {
 
     }
 
+    /**
+     * convert a hexagon position into a game coordinate (may be different from display coordinates)
+     *
+     * @param hexPos - position of a hexagon
+     * @return the given hexagons center in game coordinates
+     */
     private Vector3 convertHexCoordinatesToGamePixel(Vector3 hexPos) {
         // draw number of units in a hexagon on top of it
         float x = hexPos.x;
@@ -373,6 +404,12 @@ public class GameScreen implements Screen {
         return new Vector3(screenX, screenY, 0);
     }
 
+    /**
+     * Screen coordinates differ from game coordinates and therefore have to be transformed
+     *
+     * @param coordinates screen coordinates that should be transformed
+     * @return transformed coordinates
+     */
     public Vector3 convertScreenPixelToGamePixel(Vector3 coordinates) {
         coordinates.x = coordinates.x * (GAME_WIDTH / (Gdx.graphics.getWidth() * 1.0f));
         coordinates.y = coordinates.y * (GAME_HEIGHT / (Gdx.graphics.getHeight() * 1.0f));
@@ -426,7 +463,6 @@ public class GameScreen implements Screen {
                 }
             }
         }
-
         return new Vector3(xr, yr, 0);
     }
 

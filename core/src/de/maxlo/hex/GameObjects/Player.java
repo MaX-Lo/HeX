@@ -4,7 +4,7 @@ package de.maxlo.hex.GameObjects;
  * Created by max on 21.09.17.
  */
 
-public class Player {
+public abstract class Player {
 
     private static final int START_UNITS = 10;
 
@@ -55,4 +55,7 @@ public class Player {
     public void increaseRemainingUnits(float units) {
         remainingUnits += units;
     }
+
+    @Override
+    public abstract String toString();
 }
