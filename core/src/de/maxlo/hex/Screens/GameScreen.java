@@ -24,7 +24,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
-import de.maxlo.hex.GameObjects.GameMap;
+import de.maxlo.hex.GameObjects.Game;
 import de.maxlo.hex.GameObjects.Hexagon;
 import de.maxlo.hex.Helpers.Assets;
 import de.maxlo.hex.Helpers.FileHandler;
@@ -37,18 +37,18 @@ import de.maxlo.hex.Hex;
 
 public class GameScreen implements Screen {
 
-    // game size, may differ from screen resolution
+    // hexGame size, may differ from screen resolution
     private static final int GAME_WIDTH = 1920;
     private static final int GAME_HEIGHT = 1080;
 
-    private Hex game;
+    private Hex hexGame;
     private Assets assets;
 
     private Stage uiStage;
     private GameInputHandler gameInputHandler;
     private OrthographicCamera camera;
 
-    private GameMap map;
+    private Game game;
 
     // ui elements
     private Label remainingLabel;
@@ -57,9 +57,9 @@ public class GameScreen implements Screen {
     private Table table;
 
 
-    GameScreen(Hex game) {
-        this.game = game;
-        assets = game.getAssets();
+    GameScreen(Hex hexGame) {
+        this.hexGame = hexGame;
+        assets = hexGame.getAssets();
 
         uiStage = new Stage(new ScreenViewport());
         gameInputHandler = new GameInputHandler(this);
@@ -70,7 +70,7 @@ public class GameScreen implements Screen {
         multiplexer.addProcessor(uiStage);
         // if it wasn't the ui it's maybe a gesture like pinching?
         multiplexer.addProcessor(new GestureDetector(gameInputHandler));
-        // if it's not a gesture too it's probably a standard touch on our game field
+        // if it's not a gesture too it's probably a standard touch on our hexGame field
         multiplexer.addProcessor(gameInputHandler);
 
         // LibGDX needs to know where gesture, keyboard and touch input will be handled
@@ -81,7 +81,7 @@ public class GameScreen implements Screen {
         camera = new OrthographicCamera();
         camera.setToOrtho(false, GAME_WIDTH, GAME_HEIGHT);
 
-        map = new GameMap();
+        game = new Game();
     }
 
     private void initUI() {
@@ -96,7 +96,7 @@ public class GameScreen implements Screen {
         menuBtn.addListener(new InputListener() {
             @Override
             public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
-                game.setScreen(new MenuScreen(game));
+                hexGame.setScreen(new MenuScreen(hexGame));
             }
 
             @Override
@@ -131,8 +131,8 @@ public class GameScreen implements Screen {
             @Override
             public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
                 int units = (int)Math.floor(slider.getValue());
-                map.getHexagon(map.getSelectedHexagon()).increase(units);
-                map.getPlayer(1).decreaseRemainingUnits(units);
+                game.getHexagon(game.getSelectedHexagon()).increase(units);
+                game.getPlayer(1).decreaseRemainingUnits(units);
                 hideUnitMovement();
             }
             @Override
@@ -146,7 +146,7 @@ public class GameScreen implements Screen {
             @Override
             public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
                 int units = Math.round(slider.getValue());
-                if (units >= map.getPlayer(1).getRemainingUnits())
+                if (units >= game.getPlayer(1).getRemainingUnits())
                     return;
                 else {
                     slider.setValue(units + 1);
@@ -164,7 +164,7 @@ public class GameScreen implements Screen {
             @Override
             public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
                 int units = Math.round(slider.getValue());
-                if (units >= map.getPlayer(1).getRemainingUnits())
+                if (units >= game.getPlayer(1).getRemainingUnits())
                     return;
                 else {
                     slider.setValue(units - 1);
@@ -185,8 +185,8 @@ public class GameScreen implements Screen {
         slider.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                if (slider.getValue() > map.getPlayer(1).getRemainingUnits())
-                    slider.setValue(map.getPlayer(1).getRemainingUnits());
+                if (slider.getValue() > game.getPlayer(1).getRemainingUnits())
+                    slider.setValue(game.getPlayer(1).getRemainingUnits());
 
                 setNewUnitsLabel(Math.round(slider.getValue()));
             }
@@ -213,9 +213,9 @@ public class GameScreen implements Screen {
     }
 
     /**
-     * Move the game in a given direction
+     * Move the hexGame in a given direction
      *
-     * @param delta - amount the game should be moved
+     * @param delta - amount the hexGame should be moved
      */
     public void move(Vector3 delta) {
         // depending on zoom the translation has to be increased or decreased by the current zoom
@@ -230,8 +230,6 @@ public class GameScreen implements Screen {
      * @param amount - set how fast to zoom
      */
     public void zoom(float amount) {
-        FileHandler fileHandler = new FileHandler();
-        fileHandler.loadGame("level1.dat");
 
         camera.zoom += amount;
         if (camera.zoom < 0.2f)
@@ -248,27 +246,27 @@ public class GameScreen implements Screen {
     @Override
     public void render(float delta) {
 
-        // update game logic and objects at first...
-        map.update(delta);
+        // update hexGame logic and objects at first...
+        game.update(delta);
         gameInputHandler.update();
 
         // refresh remaining units label
-        remainingLabel.setText("remaining: " + String.valueOf(Math.round(Math.floor(map.getPlayer(1).getRemainingUnits()))));
+        remainingLabel.setText("remaining: " + String.valueOf(Math.round(Math.floor(game.getPlayer(1).getRemainingUnits()))));
 
         // ...and graphics afterwards
         Gdx.gl.glClearColor(0.25f, 0.25f, 0.25f, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         camera.update();
-        game.batch.setProjectionMatrix(camera.combined);
+        hexGame.batch.setProjectionMatrix(camera.combined);
 
         uiStage.act();
 
-        game.batch.begin();
-        drawHexagons(game.batch, map.getHexagons());
-        if (map.getSelectedHexagon() != null)
-            drawHexagon(game.batch, map.getSelectedHexagon(), Assets.selectionHex);
-        game.batch.end();
+        hexGame.batch.begin();
+        drawHexagons(hexGame.batch, game.getHexagons());
+        if (game.getSelectedHexagon() != null)
+            drawHexagon(hexGame.batch, game.getSelectedHexagon(), Assets.selectionHex);
+        hexGame.batch.end();
 
         uiStage.draw();
     }
@@ -277,7 +275,7 @@ public class GameScreen implements Screen {
      * Draws the Hexagons onto the given Spritebatch
      *
      * @param batch to draw on
-     * @param hexagons map containing hexagons with coordinates as key
+     * @param hexagons game containing hexagons with coordinates as key
      */
     private void drawHexagons(SpriteBatch batch, ObjectMap<Vector3, Hexagon> hexagons) {
         for (Vector3 coordinate : hexagons.keys()) {
@@ -291,7 +289,7 @@ public class GameScreen implements Screen {
      * Draws a single hexagon
      *
      * @param batch to draw on
-     * @param hexPos - position from the hexagon on the map. 0,0 is the bottom left Hexagon. Increasing x means going diagonal
+     * @param hexPos - position from the hexagon on the game. 0,0 is the bottom left Hexagon. Increasing x means going diagonal
      *                    right down. Increasing y means going straight upwards.
      * @param texture of the hexagon that should be drawn
      */
@@ -304,7 +302,7 @@ public class GameScreen implements Screen {
      * Draw a number on the given Hexagon pos
      *
      * @param batch to draw on
-     * @param hexPos - position from the hexagon on the map. 0,0 is the bottom left Hexagon. Increasing x means going diagonal
+     * @param hexPos - position from the hexagon on the game. 0,0 is the bottom left Hexagon. Increasing x means going diagonal
      *                    right down. Increasing y means going straight upwards.
      * @param units - number that should be drawn
      */
@@ -334,7 +332,7 @@ public class GameScreen implements Screen {
     }
 
     /**
-     * Should be called after game screen got clicked/touched
+     * Should be called after hexGame screen got clicked/touched
      *
      * @param pos - Screen pixel that got clicked
      */
@@ -342,11 +340,11 @@ public class GameScreen implements Screen {
         pos = convertScreenPixelToHex(pos);
 
         // check whether a hexagon got clicked
-        if (map.getHexagon(pos) == null) {
-            map.unselectHexagon();
+        if (game.getHexagon(pos) == null) {
+            game.unselectHexagon();
             hideUnitMovement();
-        } else if (map.getHexagon(pos).getOwner().equals(map.getPlayer(1))) {
-            map.selectHexagon(pos);
+        } else if (game.getHexagon(pos).getOwner().equals(game.getPlayer(1))) {
+            game.selectHexagon(pos);
             showUnitMovement();
         }
     }
@@ -383,10 +381,10 @@ public class GameScreen implements Screen {
     }
 
     /**
-     * convert a hexagon position into a game coordinate (may be different from display coordinates)
+     * convert a hexagon position into a hexGame coordinate (may be different from display coordinates)
      *
      * @param hexPos - position of a hexagon
-     * @return the given hexagons center in game coordinates
+     * @return the given hexagons center in hexGame coordinates
      */
     private Vector3 convertHexCoordinatesToGamePixel(Vector3 hexPos) {
         // draw number of units in a hexagon on top of it
@@ -405,7 +403,7 @@ public class GameScreen implements Screen {
     }
 
     /**
-     * Screen coordinates differ from game coordinates and therefore have to be transformed
+     * Screen coordinates differ from hexGame coordinates and therefore have to be transformed
      *
      * @param coordinates screen coordinates that should be transformed
      * @return transformed coordinates

@@ -14,7 +14,7 @@ import de.maxlo.hex.Helpers.MapGenerator;
  * Created by max on 21.09.17.
  */
 
-public class GameMap {
+public class Game {
 
     private ObjectMap<Vector3, Hexagon> hexagons;
     private List<Travel> travelList; // contains all current movements of units
@@ -22,7 +22,7 @@ public class GameMap {
 
     private Vector3 selectedHexagon;
 
-    public GameMap() {
+    public Game() {
         hexagons = new ObjectMap<Vector3, Hexagon>();
         players = new ArrayList<Player>();
         travelList = new ArrayList<Travel>();

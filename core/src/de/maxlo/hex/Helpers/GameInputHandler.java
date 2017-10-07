@@ -140,7 +140,7 @@ public class GameInputHandler implements InputProcessor, GestureDetector.Gesture
 
         float zoomChange = oldAmount - amount;
 
-        if (!dragging && (zoomChange > 0.025f || zoomChange < -0.025f)) // determine how fast zooming should get activated
+        if (!dragging && (zoomChange > 0.035f || zoomChange < -0.035f)) // determine how fast zooming should get activated
             zooming = true;
 
         if (zooming && !dragging)
@@ -150,8 +150,8 @@ public class GameInputHandler implements InputProcessor, GestureDetector.Gesture
         return true;
     }
 
-    private float oldDragX;
-    private float oldDragY;
+    private Float oldDragX = null;
+    private Float oldDragY = null;
     @Override
     public boolean pinch(Vector2 initialPointer1, Vector2 initialPointer2, Vector2 pointer1, Vector2 pointer2) {
 
@@ -160,7 +160,7 @@ public class GameInputHandler implements InputProcessor, GestureDetector.Gesture
             float x = (pointer1.x + pointer2.x) / 2f;
             float y = (pointer1.y + pointer2.y) / 2f;
 
-            if (initialPointer1.x == pointer1.x && initialPointer1.y == pointer1.y && initialPointer2.x == pointer2.x && initialPointer2.y == pointer2.y) {
+            if (oldDragX == null || oldDragY == null) {
                 oldDragX = x;
                 oldDragY = y;
             }
@@ -185,6 +185,8 @@ public class GameInputHandler implements InputProcessor, GestureDetector.Gesture
     @Override
     public void pinchStop() {
         oldAmount = 0;
+        oldDragX = null;
+        oldDragY = null;
         zooming = false;
         dragging = false;
     }

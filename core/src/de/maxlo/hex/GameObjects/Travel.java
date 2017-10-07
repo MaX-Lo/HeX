@@ -2,7 +2,6 @@ package de.maxlo.hex.GameObjects;
 
 import com.badlogic.gdx.math.Vector3;
 
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -26,8 +25,8 @@ public class Travel {
         progress = 0.0f;
     }
 
-    public boolean start(GameMap map, Player player) {
-        GameMap ownerMap = constructOwnerMap(map, player);
+    public boolean start(Game map, Player player) {
+        Game ownerMap = constructOwnerMap(map, player);
 
         wayPoints = calculateRoute(ownerMap);
         if (wayPoints != null)
@@ -55,12 +54,12 @@ public class Travel {
     /**
      * returns null if no route exists
      */
-    private List<Vector3> calculateRoute(GameMap map) {
+    private List<Vector3> calculateRoute(Game map) {
         // Todo AI Algorithm
         return null;
     }
 
-    private GameMap constructOwnerMap(GameMap map, Player owner) {
+    private Game constructOwnerMap(Game map, Player owner) {
         // returns a new map with owner hexagon fields only
         // Todo
         return null;
