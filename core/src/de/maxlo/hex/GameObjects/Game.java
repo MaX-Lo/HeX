@@ -4,9 +4,7 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.ObjectMap;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import de.maxlo.hex.Helpers.MapGenerator;
 
@@ -48,8 +46,12 @@ public class Game {
     private void test() {
 
         MapGenerator mapGenerator = new MapGenerator(12, 8, 3, 1);
+
         players = mapGenerator.getPlayers();
         hexagons = mapGenerator.getMap();
+
+        Travel travel = new Travel(new Vector3(0, 0, 0), new Vector3(10,12,0));
+        System.out.println(travel.start(hexagons, players.get(0)));
     }
 
     /**

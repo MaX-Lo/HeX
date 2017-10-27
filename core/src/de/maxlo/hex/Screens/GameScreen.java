@@ -311,8 +311,10 @@ public class GameScreen implements Screen {
         float hexWidth = Assets.greenHex.getWidth();
         float hexHeight = Assets.greenHex.getHeight();
 
-        assets.layout.setText(assets.fontUnits, String.valueOf(units));
-        assets.fontUnits.draw(batch, String.valueOf(units), screenPos.x+(0.5f*hexWidth)-(0.5f*assets.layout.width), screenPos.y + (0.5f*hexHeight) + (0.5f*assets.layout.height));
+        // TODO replace with unit number
+        //assets.layout.setText(assets.fontUnits, String.valueOf(units));
+        assets.layout.setText(assets.fontUnits, String.valueOf((int)hexPos.x) + "," + String.valueOf((int)hexPos.y));
+        assets.fontUnits.draw(batch, String.valueOf((int)hexPos.x) + "," + String.valueOf((int)hexPos.y), screenPos.x+(0.5f*hexWidth)-(0.5f*assets.layout.width), screenPos.y + (0.5f*hexHeight) + (0.5f*assets.layout.height));
     }
 
     /**
